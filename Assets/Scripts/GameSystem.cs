@@ -12,7 +12,7 @@ public class GameSystem : NetworkBehaviour
     [SerializeField] private float _timeToPrepareRestart = 2f;
     [SerializeField] private WinnerUI _winnerUI;
     [SerializeField] private PrepareGameUI _prepareGameUI;
-
+    private bool _hasWinner;
     private readonly List<Player> _players = new();
 
     public void AddPlayer(Player player)
@@ -33,8 +33,8 @@ public class GameSystem : NetworkBehaviour
 
     private void OnPlayerScoreChanged(int score, string nickname)
     {
-        if (_scoreToWin > score) return;
-
+        if (_scoreToWin > score || _hasWinner) return;
+        _hasWinner = true;
         RpcShowWinner(nickname);
     }
 

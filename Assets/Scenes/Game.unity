@@ -4511,7 +4511,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   _scoreToWin: 3
-  _timeToShowWinner: 2
+  _timeToShowWinner: 5
   _timeToPrepareRestart: 2
   _winnerUI: {fileID: 134622740}
   _prepareGameUI: {fileID: 134622741}
