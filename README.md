@@ -1,2 +1,1 @@
-# BH_Test
- Roman Nikiforov
+# Roman Nikiforov
