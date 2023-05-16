@@ -12,5 +12,4 @@ public class WinnerUI : MonoBehaviour
         _winnerPanel.gameObject.SetActive(true);
         _winnerNickname.text = string.Format(_winnerTemplate, winner);
     }
-    
 }

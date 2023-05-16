@@ -48,7 +48,7 @@ namespace Factories
                 _spawnPoints.Add(new SpawnPointData { ConnectionId = null, Transform = startPosition });
             }
         }
-
+        
         private Transform ReservePosition(int connectionId)
         {
             var spawnPointDatas = _spawnPoints.Where(x => x.ConnectionId is null).ToList();
@@ -58,6 +58,7 @@ namespace Factories
             return spawnPointData.Transform;
         }
 
+        [Server]
         public void DeletePlayerSpawnInformation(int connectionId)
         {
             var spawnPointData =
@@ -67,13 +68,14 @@ namespace Factories
                 spawnPointData.ConnectionId = null;
         }
 
+        [Server]
         public GameObject CreatePlayer(int connectionId)
         {
             var spawnTransform = ReservePosition(connectionId);
             var playerGameObject = Instantiate(NetworkManager.singleton.playerPrefab, spawnTransform.position,
                 Quaternion.identity);
             playerGameObject.GetComponent<Player>().Init(_gameSystem);
-            ;
+            
             return playerGameObject;
         }
     }

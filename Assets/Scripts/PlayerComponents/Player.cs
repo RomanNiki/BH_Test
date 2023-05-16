@@ -21,16 +21,18 @@ namespace PlayerComponents
         {
             if (isLocalPlayer)
             {
-                SetNickname(PlayerSettings.Nickname);
+                CmdSetNickname(PlayerSettings.Nickname);
             }
         }
 
-        private void OnDestroy()
+        public override void OnStopLocalPlayer()
         {
             if (_gameSystem != null)
             {
-                _gameSystem.RemovePlayer(this);
+                _gameSystem.CmdRemovePlayer(this);
             }
+
+            base.OnStopLocalPlayer();
         }
 
         private void OnNicknameChanged(string _, string newNickname)
@@ -44,6 +46,12 @@ namespace PlayerComponents
         }
 
         [Command(requiresAuthority = false)]
+        public void CmdSetNickname(string nickname)
+        {
+            SetNickname(nickname);
+        }
+
+        [Server]
         public void SetNickname(string nickname)
         {
             _nickname = nickname;
@@ -51,6 +59,12 @@ namespace PlayerComponents
 
         [Command(requiresAuthority = false)]
         public void CmdIncreaseScore()
+        {
+            IncreaseScore();
+        }
+
+        [Server]
+        private void IncreaseScore()
         {
             _score++;
         }

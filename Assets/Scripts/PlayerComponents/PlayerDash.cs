@@ -67,6 +67,21 @@ namespace PlayerComponents
             _isCoolDown = false;
         }
 
+        [Server]
+        private void Damage(PlayerCombat combat)
+        {
+            if (combat.TryGetDamage())
+            {
+                _player.CmdIncreaseScore();
+            }
+        }
+
+        [Command]
+        private void CmdDamage(PlayerCombat combat)
+        {
+            Damage(combat);
+        }
+
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
             if (_isDashing == false)
@@ -74,7 +89,7 @@ namespace PlayerComponents
 
             if (hit.collider.TryGetComponent(out PlayerCombat combat))
             {
-                combat.CmdGetDamage(_player);
+                CmdDamage(combat);
             }
         }
     }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Mirror;
 using UnityEngine;
@@ -11,19 +10,32 @@ namespace PlayerComponents
         [SerializeField][SyncVar] private float _invincibilityDuration;
         [SerializeField] private Color _invincibilityColor;
         private PlayerColor _playerColor;
-        private bool _isInvincible;
+        [SyncVar] private bool _isInvincible;
 
         private void Awake()
         {
             _playerColor = GetComponent<PlayerColor>();
         }
+
+        public bool TryGetDamage()
+        {
+            if (_isInvincible)
+                return false;
+            CmdGetDamage();
+            return true;
+        }
         
         [Command(requiresAuthority = false)]
-        public void CmdGetDamage(Player damager)
+        public void CmdGetDamage()
+        {
+            GetDamage();
+        }
+
+        [Server]
+        private void GetDamage()
         {
             if (_isInvincible)
                 return;
-            damager.CmdIncreaseScore();
             _isInvincible = true;
             ChangeColor();
         }

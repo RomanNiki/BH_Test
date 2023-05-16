@@ -15,6 +15,50 @@ public class GameSystem : NetworkBehaviour
     private bool _hasWinner;
     private readonly List<Player> _players = new();
 
+    public void StartGame()
+    {
+        RpcShowPrepareScreen();
+        StartCoroutine(WaitRestartGame(_timeToPrepareRestart));
+    }
+
+    [ClientRpc]
+    private void RpcShowPrepareScreen()
+    {
+        _prepareGameUI.ShowPrepareScreen();
+    }
+
+    private void OnPlayerScoreChanged(int score, string nickname)
+    {
+        if (_scoreToWin > score || _hasWinner) return;
+        _hasWinner = true;
+        ShowWinner(nickname);
+    }
+    
+    private void ShowWinner(string nickname)
+    {
+        RpcShowWinner(nickname);
+        StartCoroutine(WaitRestartGame(_timeToShowWinner));
+    }
+    
+    [ClientRpc]
+    private void RpcShowWinner(string nickname)
+    {
+        _winnerUI.ShowWinner(nickname);
+    }
+
+    private IEnumerator WaitRestartGame(float timeToWait)
+    {
+        yield return new WaitForSeconds(timeToWait);
+        RestartGame();
+    }
+
+    [Server]
+    private void RestartGame()
+    {
+        NetworkManager.singleton.ServerChangeScene(NetworkManager.singleton.onlineScene);
+    }
+    
+    [Server]
     public void AddPlayer(Player player)
     {
         if (_players.Contains(player))
@@ -24,44 +68,13 @@ public class GameSystem : NetworkBehaviour
         _players.Add(player);
     }
 
-    [ClientRpc]
-    public void StartGame()
+    [Command(requiresAuthority = false)]
+    public void CmdRemovePlayer(Player player)
     {
-        _prepareGameUI.ShowPrepareScreen();
-        StartCoroutine(WaitRestartGame(_timeToPrepareRestart));
+        RemovePlayer(player);
     }
-
-    private void OnPlayerScoreChanged(int score, string nickname)
-    {
-        if (_scoreToWin > score || _hasWinner) return;
-        _hasWinner = true;
-        RpcShowWinner(nickname);
-    }
-
-    [ClientRpc]
-    private void RpcShowWinner(string nickname)
-    {
-        StartCoroutine(ShowWinner(nickname));
-    }
-
-    private IEnumerator ShowWinner(string nickname)
-    {
-        _winnerUI.ShowWinner(nickname);
-        yield return WaitRestartGame(_timeToShowWinner);
-    }
-
-    private IEnumerator WaitRestartGame(float timeToWait)
-    {
-        yield return new WaitForSeconds(timeToWait);
-        RestartGame();
-    }
-
-    private void RestartGame()
-    {
-        if (isServer)
-            NetworkManager.singleton.ServerChangeScene(NetworkManager.singleton.onlineScene);
-    }
-
+    
+    [Server]
     public void RemovePlayer(Player player)
     {
         if (_players.Contains(player) == false)
