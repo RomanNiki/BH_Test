@@ -21,6 +21,7 @@ namespace PlayerComponents
         {
             if (_isInvincible)
                 return false;
+            
             CmdGetDamage();
             return true;
         }

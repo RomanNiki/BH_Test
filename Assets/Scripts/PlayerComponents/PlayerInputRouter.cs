@@ -60,6 +60,8 @@ namespace PlayerComponents
         private void OnGameMenu(InputAction.CallbackContext obj)
         {
             if (!isLocalPlayer) return;
+            if (GameMenuUI.Instance == null) return;
+            
             if (obj.performed)
             {
                 GameMenuUI.Instance.ToggleMenu();

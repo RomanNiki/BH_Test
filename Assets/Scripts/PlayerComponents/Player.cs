@@ -29,7 +29,15 @@ namespace PlayerComponents
         {
             if (_gameSystem != null)
             {
-                _gameSystem.CmdRemovePlayer(this);
+                if (isServer)
+                {
+                    _gameSystem.RemovePlayer(this);
+                }
+                else
+                {
+                    _gameSystem.CmdRemovePlayer(this);
+                }
+               
             }
 
             base.OnStopLocalPlayer();

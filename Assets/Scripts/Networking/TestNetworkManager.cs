@@ -5,15 +5,8 @@ namespace Networking
 {
     public class TestNetworkManager : NetworkManager
     {
-        public new static TestNetworkManager singleton { get; private set; }
         private GameSystem _gameSystem;
         private bool _isGame;
-        
-        public override void Awake()
-        {
-            base.Awake();
-            singleton = this;
-        }
 
         public override void OnServerSceneChanged(string sceneName)
         {
@@ -34,8 +27,8 @@ namespace Networking
 
         public override void OnStopServer()
         {
-            base.OnStopServer();
             _isGame = false;
+            base.OnStopServer();
         }
 
         public override void OnServerDisconnect(NetworkConnectionToClient conn)
