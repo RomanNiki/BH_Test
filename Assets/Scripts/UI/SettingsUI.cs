@@ -21,7 +21,7 @@ namespace UI
         
         private void ExitGameRoom()
         {
-            var networkManager = TestNetworkManager.singleton;
+            var networkManager = NetworkManager.singleton;
             switch (networkManager.mode)
             {
                 case NetworkManagerMode.Host:

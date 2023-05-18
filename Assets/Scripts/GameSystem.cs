@@ -13,8 +13,9 @@ public class GameSystem : NetworkBehaviour
     [SerializeField] private WinnerUI _winnerUI;
     [SerializeField] private PrepareGameUI _prepareGameUI;
     private bool _hasWinner;
+    public bool HasWinner => _hasWinner;
     private readonly List<Player> _players = new();
-
+    
     public void StartGame()
     {
         RpcShowPrepareScreen();

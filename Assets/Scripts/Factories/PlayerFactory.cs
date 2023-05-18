@@ -3,6 +3,7 @@ using System.Linq;
 using Mirror;
 using PlayerComponents;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Factories
 {
@@ -10,7 +11,6 @@ namespace Factories
     {
         [SerializeField] private GameSystem _gameSystem;
         private List<SpawnPointData> _spawnPoints;
-
         public static PlayerFactory Instance { get; private set; }
 
         private void Awake()
@@ -33,7 +33,7 @@ namespace Factories
             }
         }
 
-        private void Start()
+        private void OnEnable()
         {
             LoadSpawnPoints();
         }
@@ -69,17 +69,17 @@ namespace Factories
         }
 
         [Server]
-        public GameObject CreatePlayer(int connectionId)
+        public Player CreatePlayer(int connectionId)
         {
             var spawnTransform = ReservePosition(connectionId);
             var playerGameObject = Instantiate(NetworkManager.singleton.playerPrefab, spawnTransform.position,
                 Quaternion.identity);
-            playerGameObject.GetComponent<Player>().Init(_gameSystem);
-            
-            return playerGameObject;
+            var player = playerGameObject.GetComponent<Player>();
+            player.Init(_gameSystem);
+            return player;
         }
     }
-
+    
     public class SpawnPointData
     {
         public Transform Transform { get; set; }

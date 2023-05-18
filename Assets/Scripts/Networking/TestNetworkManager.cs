@@ -7,7 +7,7 @@ namespace Networking
     {
         private GameSystem _gameSystem;
         private bool _isGame;
-
+        
         public override void OnServerSceneChanged(string sceneName)
         {
             base.OnServerSceneChanged(sceneName);
@@ -16,8 +16,9 @@ namespace Networking
 
         public override void OnServerAddPlayer(NetworkConnectionToClient conn)
         {
-            var player = PlayerFactory.Instance.CreatePlayer(conn.connectionId);
-            NetworkServer.AddPlayerForConnection(conn, player);
+            var connectionId = conn.connectionId;
+            var player = PlayerFactory.Instance.CreatePlayer(connectionId);
+            NetworkServer.AddPlayerForConnection(conn, player.gameObject);
             if (numPlayers == 2 && _isGame == false)
             {
                 _isGame = true;

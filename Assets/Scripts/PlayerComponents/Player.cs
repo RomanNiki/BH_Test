@@ -1,6 +1,7 @@
 using System;
 using Mirror;
 using Networking;
+using UI;
 
 namespace PlayerComponents
 {
@@ -10,20 +11,30 @@ namespace PlayerComponents
 
         [SyncVar(hook = nameof(OnNicknameChanged))]
         private string _nickname;
-
+        public string Nickname => _nickname;
         [SyncVar(hook = nameof(OnScoreChanged))]
         private int _score;
-
         public event Action<int, string> ScoreChanged;
         public event Action<string> NicknameChanged;
+        private ScoreBoardItem _playerScoreBoardItem;
 
-        private void Start()
+        public override void OnStartLocalPlayer()
+        {
+            CmdUpdateScore();
+        }
+
+        public override void OnStartClient()
         {
             if (isLocalPlayer)
             {
                 CmdSetNickname(PlayerSettings.Nickname);
             }
+            if (ScoreBoard.Instance != null)
+            {
+                _playerScoreBoardItem = ScoreBoard.Instance.CreateScoreBoardItem(this);
+            }
         }
+        
 
         public override void OnStopLocalPlayer()
         {
@@ -37,10 +48,25 @@ namespace PlayerComponents
                 {
                     _gameSystem.CmdRemovePlayer(this);
                 }
-               
             }
 
+            if (ScoreBoard.Instance != null)
+            {
+                ScoreBoard.Instance.SetActive(false);
+            }
+         
             base.OnStopLocalPlayer();
+        }
+
+        public override void OnStopClient()
+        {
+            ScoreChanged = null;
+            NicknameChanged = null;
+            
+            if (_playerScoreBoardItem != null)
+            {
+                Destroy(_playerScoreBoardItem.gameObject);
+            }
         }
 
         private void OnNicknameChanged(string _, string newNickname)
@@ -59,6 +85,12 @@ namespace PlayerComponents
             SetNickname(nickname);
         }
 
+        [Command(requiresAuthority = false)]
+        private void CmdUpdateScore()
+        {
+            ScoreChanged?.Invoke(_score, _nickname);
+        }
+
         [Server]
         public void SetNickname(string nickname)
         {
@@ -74,9 +106,12 @@ namespace PlayerComponents
         [Server]
         private void IncreaseScore()
         {
-            _score++;
+            if (_gameSystem.HasWinner == false)
+            {
+                _score++;
+            }
         }
-
+        
         public void Init(GameSystem gameSystem)
         {
             _gameSystem = gameSystem;
