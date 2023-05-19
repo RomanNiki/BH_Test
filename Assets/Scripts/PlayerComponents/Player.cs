@@ -38,18 +38,6 @@ namespace PlayerComponents
 
         public override void OnStopLocalPlayer()
         {
-            if (_gameSystem != null)
-            {
-                if (isServer)
-                {
-                    _gameSystem.RemovePlayer(this);
-                }
-                else
-                {
-                    _gameSystem.CmdRemovePlayer(this);
-                }
-            }
-
             if (ScoreBoard.Instance != null)
             {
                 ScoreBoard.Instance.SetActive(false);
@@ -62,6 +50,18 @@ namespace PlayerComponents
         {
             ScoreChanged = null;
             NicknameChanged = null;
+            
+            if (_gameSystem != null)
+            {
+                if (isServer)
+                {
+                    _gameSystem.RemovePlayer(this);
+                }
+                else
+                {
+                    _gameSystem.CmdRemovePlayer(this);
+                }
+            }
             
             if (_playerScoreBoardItem != null)
             {

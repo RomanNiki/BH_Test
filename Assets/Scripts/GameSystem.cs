@@ -12,10 +12,10 @@ public class GameSystem : NetworkBehaviour
     [SerializeField] private float _timeToPrepareRestart = 2f;
     [SerializeField] private WinnerUI _winnerUI;
     [SerializeField] private PrepareGameUI _prepareGameUI;
-    private bool _hasWinner;
-    public bool HasWinner => _hasWinner;
+    public bool HasWinner { get; private set; }
+
     private readonly List<Player> _players = new();
-    
+
     public void StartGame()
     {
         RpcShowPrepareScreen();
@@ -30,17 +30,17 @@ public class GameSystem : NetworkBehaviour
 
     private void OnPlayerScoreChanged(int score, string nickname)
     {
-        if (_scoreToWin > score || _hasWinner) return;
-        _hasWinner = true;
+        if (_scoreToWin > score || HasWinner) return;
+        HasWinner = true;
         ShowWinner(nickname);
     }
-    
+
     private void ShowWinner(string nickname)
     {
         RpcShowWinner(nickname);
         StartCoroutine(WaitRestartGame(_timeToShowWinner));
     }
-    
+
     [ClientRpc]
     private void RpcShowWinner(string nickname)
     {
@@ -58,7 +58,7 @@ public class GameSystem : NetworkBehaviour
     {
         NetworkManager.singleton.ServerChangeScene(NetworkManager.singleton.onlineScene);
     }
-    
+
     [Server]
     public void AddPlayer(Player player)
     {
@@ -74,7 +74,7 @@ public class GameSystem : NetworkBehaviour
     {
         RemovePlayer(player);
     }
-    
+
     [Server]
     public void RemovePlayer(Player player)
     {
