@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 namespace UI
 {
     public class OnlineUI : MonoBehaviour
@@ -11,7 +12,9 @@ namespace UI
         [SerializeField] private Button _hostButton;
         [SerializeField] private Button _joinButton;
         [SerializeField] private TMP_InputField _nicknameInputField;
-    
+        [SerializeField] private string _defaultNickname = "Guest";
+        
+        
         private void OnEnable()
         {
             _hostButton.onClick.AddListener(StartHost);
@@ -40,7 +43,7 @@ namespace UI
 
         private void SetName()
         {
-            PlayerSettings.Nickname = _nicknameInputField.text != "" ? _nicknameInputField.text : "Guest";
+            PlayerSettings.Nickname = _nicknameInputField.text != "" ? _nicknameInputField.text : _defaultNickname;
         }
     }
 }

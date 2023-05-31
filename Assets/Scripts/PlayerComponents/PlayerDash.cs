@@ -14,6 +14,8 @@ namespace PlayerComponents
         [SerializeField] [SyncVar] private float _dashDistance = 5f;
         [SerializeField] [SyncVar] private float _cooldown = 1f;
         [SerializeField] [SyncVar] private float _sphereRadius = 1f;
+        [SerializeField] private PlayerAnimation _playerAnimation;
+
         private PlayerRotator _playerRotator;
         private Player _player;
         private CharacterController _controller;
@@ -40,12 +42,13 @@ namespace PlayerComponents
                 var endPoint = hit.point;
                 _distance = (endPoint - transform.position).magnitude;
             }
-
+           
             await Dash(targetDirection);
         }
 
         private async Task Dash(Vector3 dashDirection)
         {
+            _playerAnimation.Dash();
             _isDashing = true;
             var dashDistanceTraveled = 0f;
             while (dashDistanceTraveled < _distance)
@@ -57,6 +60,7 @@ namespace PlayerComponents
             }
 
             _isDashing = false;
+            _playerAnimation.Dash(false);
             await SetDashCooldown();
         }
 
@@ -67,19 +71,13 @@ namespace PlayerComponents
             _isCoolDown = false;
         }
 
-        [Server]
-        private void Damage(PlayerCombat combat)
+        [Command]
+        private void CmdDamage(PlayerCombat combat)
         {
             if (combat.TryGetDamage())
             {
                 _player.CmdIncreaseScore();
             }
-        }
-
-        [Command]
-        private void CmdDamage(PlayerCombat combat)
-        {
-            Damage(combat);
         }
 
         private void OnControllerColliderHit(ControllerColliderHit hit)

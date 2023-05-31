@@ -9,7 +9,6 @@ namespace UI
     {
         [SerializeField] private GameObject _menuPanel;
         [SerializeField] private Button _backgroundButton;
-        [SerializeField] private Button _hideMenuButton;
         [SerializeField] private Button _exitButton;
         [SerializeField] private GameMenu _gameMenu;
 
@@ -41,21 +40,25 @@ namespace UI
         private void OnEnable()
         {
             _backgroundButton.onClick.AddListener(HideMenu);
-            _hideMenuButton.onClick.AddListener(HideMenu);
             _exitButton.onClick.AddListener(OnExitButtonClick);
+        }
+
+        private void OnDisable()
+        {
+            _backgroundButton.onClick.RemoveListener(HideMenu);
+        }
+
+        public override void OnStopLocalPlayer()
+        {
+            HideMenu();
+            base.OnStopLocalPlayer();
         }
 
         private void OnExitButtonClick()
         {
             _gameMenu.Disconnect();
         }
-
-        private void OnDisable()
-        {
-            _backgroundButton.onClick.RemoveListener(HideMenu);
-            _hideMenuButton.onClick.RemoveListener(HideMenu);
-        }
-
+        
         public void ToggleMenu()
         {
             if (IsActive)

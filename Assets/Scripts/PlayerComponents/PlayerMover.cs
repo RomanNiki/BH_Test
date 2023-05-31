@@ -9,6 +9,7 @@ namespace PlayerComponents
     {
         [SerializeField] [SyncVar] private float _moveSpeed = 5f;
         [SerializeField] [SyncVar] private float _speedRateChange = 10f;
+        [SerializeField] private PlayerAnimation _animation;
         private CharacterController _controller;
         private PlayerRotator _playerRotator;
         private float _targetRotation;
@@ -40,16 +41,15 @@ namespace PlayerComponents
                 {
                     _speed = targetSpeed;
                 }
-
                 _targetRotation = _playerRotator.Rotate(moveDirection);
             }
             else
             {
                 _speed = targetSpeed;
             }
-
+            _animation.SetMove(_speed);
             var targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-            _controller.Move(targetDirection.normalized * (targetSpeed * Time.deltaTime));
+            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime));
         }
     }
 }

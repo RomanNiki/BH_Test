@@ -1,4 +1,5 @@
 using System;
+using Game;
 using Mirror;
 using Networking;
 using UI;
@@ -9,9 +10,9 @@ namespace PlayerComponents
     {
         private GameSystem _gameSystem;
 
-        [SyncVar(hook = nameof(OnNicknameChanged))]
-        private string _nickname;
-        public string Nickname => _nickname;
+        [field: SyncVar(hook = nameof(OnNicknameChanged))]
+        public string Nickname { get; private set; }
+
         [SyncVar(hook = nameof(OnScoreChanged))]
         private int _score;
         public event Action<int, string> ScoreChanged;
@@ -20,22 +21,18 @@ namespace PlayerComponents
 
         public override void OnStartLocalPlayer()
         {
+            CmdSetNickname(PlayerSettings.Nickname);
             CmdUpdateScore();
         }
 
         public override void OnStartClient()
         {
-            if (isLocalPlayer)
-            {
-                CmdSetNickname(PlayerSettings.Nickname);
-            }
             if (ScoreBoard.Instance != null)
             {
                 _playerScoreBoardItem = ScoreBoard.Instance.CreateScoreBoardItem(this);
             }
         }
         
-
         public override void OnStopLocalPlayer()
         {
             if (ScoreBoard.Instance != null)
@@ -76,7 +73,7 @@ namespace PlayerComponents
 
         private void OnScoreChanged(int _, int newScore)
         {
-            ScoreChanged?.Invoke(newScore, _nickname);
+            ScoreChanged?.Invoke(newScore, Nickname);
         }
 
         [Command(requiresAuthority = false)]
@@ -88,13 +85,13 @@ namespace PlayerComponents
         [Command(requiresAuthority = false)]
         private void CmdUpdateScore()
         {
-            ScoreChanged?.Invoke(_score, _nickname);
+            ScoreChanged?.Invoke(_score, Nickname);
         }
 
         [Server]
         public void SetNickname(string nickname)
         {
-            _nickname = nickname;
+            Nickname = nickname;
         }
 
         [Command(requiresAuthority = false)]

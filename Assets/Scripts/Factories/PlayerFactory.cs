@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Game;
 using Mirror;
 using PlayerComponents;
 using UnityEngine;
@@ -7,82 +8,76 @@ using Random = UnityEngine.Random;
 
 namespace Factories
 {
-    public class PlayerFactory : MonoBehaviour
+    public class PlayerFactory
     {
-        [SerializeField] private GameSystem _gameSystem;
-        private List<SpawnPointData> _spawnPoints;
-        public static PlayerFactory Instance { get; private set; }
+        private readonly GameSystem _gameSystem;
+        private readonly List<SpawnPointData> _spawnPoints;
 
-        private void Awake()
+        public PlayerFactory(GameSystem gameSystem)
         {
-            if (Instance is null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(this);
-            }
-        }
-
-        private void OnDestroy()
-        {
-            if (this == Instance)
-            {
-                Instance = null;
-            }
-        }
-
-        private void OnEnable()
-        {
-            LoadSpawnPoints();
-        }
-
-        private void LoadSpawnPoints()
-        {
-            var startPositions = NetworkManager.startPositions;
+            _gameSystem = gameSystem;
             _spawnPoints = new List<SpawnPointData>();
+        }
 
+        public void LoadSpawnPoints(IEnumerable<Transform> startPositions)
+        {
             foreach (var startPosition in startPositions)
             {
-                _spawnPoints.Add(new SpawnPointData { ConnectionId = null, Transform = startPosition });
+                _spawnPoints.Add(new SpawnPointData(startPosition));
+            }
+        }
+
+        public void DeletePlayerSpawnInformation(int connectionId)
+        {
+            var spawnPointData = _spawnPoints.FirstOrDefault(x => x.ConnectionId == connectionId);
+            if (spawnPointData != null)
+            {
+                spawnPointData.ConnectionId = null;
             }
         }
         
         private Transform ReservePosition(int connectionId)
         {
-            var spawnPointDatas = _spawnPoints.Where(x => x.ConnectionId is null).ToList();
-            var spawnPointData = spawnPointDatas[Random.Range(0, spawnPointDatas.Count - 1)];
-            if (spawnPointData == null) return null;
+            var spawnPointDatas = _spawnPoints.Where(x => x.ConnectionId == null).ToList();
+
+            if (spawnPointDatas.Count == 0)
+            {
+                return null;
+            }
+
+            var spawnPointData = spawnPointDatas[Random.Range(0, spawnPointDatas.Count)];
+
             spawnPointData.ConnectionId = connectionId;
             return spawnPointData.Transform;
         }
+        
 
-        [Server]
-        public void DeletePlayerSpawnInformation(int connectionId)
+        public Player CreatePlayer(NetworkConnectionToClient connection)
         {
-            var spawnPointData =
-                _spawnPoints.FirstOrDefault(x => x.ConnectionId == connectionId);
+            var spawnTransform = ReservePosition(connection.connectionId);
+            if (spawnTransform == null)
+            {
+                return null;
+            }
 
-            if (spawnPointData != null)
-                spawnPointData.ConnectionId = null;
-        }
-
-        [Server]
-        public Player CreatePlayer(int connectionId)
-        {
-            var spawnTransform = ReservePosition(connectionId);
-            var playerGameObject = Instantiate(NetworkManager.singleton.playerPrefab, spawnTransform.position,
+            var playerGameObject = Object.Instantiate(NetworkManager.singleton.playerPrefab, spawnTransform.position,
                 Quaternion.identity);
             var player = playerGameObject.GetComponent<Player>();
             player.Init(_gameSystem);
+            NetworkServer.AddPlayerForConnection(connection, player.gameObject);
             return player;
         }
     }
-    
+
     public class SpawnPointData
     {
-        public Transform Transform { get; set; }
+        public Transform Transform { get; }
         public int? ConnectionId { get; set; }
+
+        public SpawnPointData(Transform transform)
+        {
+            Transform = transform;
+            ConnectionId = null;
+        }
     }
 }

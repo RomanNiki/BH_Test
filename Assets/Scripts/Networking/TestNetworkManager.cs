@@ -1,4 +1,5 @@
 using Factories;
+using Game;
 using Mirror;
 
 namespace Networking
@@ -7,34 +8,42 @@ namespace Networking
     {
         private GameSystem _gameSystem;
         private bool _isGame;
-        
+        private PlayerFactory _playerFactory;
+
         public override void OnServerSceneChanged(string sceneName)
         {
             base.OnServerSceneChanged(sceneName);
+            FindGameSceneReferences(sceneName);
+        }
+
+        private void FindGameSceneReferences(string sceneName)
+        {
+            if (sceneName.Contains(Scenes.Game) == false) return;
             _gameSystem = FindObjectOfType<GameSystem>();
+            _playerFactory = new PlayerFactory(_gameSystem);
+            _playerFactory.LoadSpawnPoints(startPositions);
         }
 
         public override void OnServerAddPlayer(NetworkConnectionToClient conn)
         {
-            var connectionId = conn.connectionId;
-            var player = PlayerFactory.Instance.CreatePlayer(connectionId);
-            NetworkServer.AddPlayerForConnection(conn, player.gameObject);
-            if (numPlayers == 2 && _isGame == false)
-            {
-                _isGame = true;
-                _gameSystem.StartGame();
-            }
-        }
-
-        public override void OnStopServer()
-        {
-            _isGame = false;
-            base.OnStopServer();
+            if (_playerFactory == null)
+                return;
+            _playerFactory.CreatePlayer(conn);
+            if (numPlayers < 2 || _isGame) return;
+            _isGame = true;
+            _gameSystem.StartGame();
         }
 
         public override void OnServerDisconnect(NetworkConnectionToClient conn)
         {
-            PlayerFactory.Instance.DeletePlayerSpawnInformation(conn.connectionId);
+            if (numPlayers - 1 < 2)
+            {
+                _isGame = false;
+            }
+            if (_playerFactory == null)
+                return;
+            _playerFactory.DeletePlayerSpawnInformation(conn.connectionId);
+           
             base.OnServerDisconnect(conn);
         }
     }

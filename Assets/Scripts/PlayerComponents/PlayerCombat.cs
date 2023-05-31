@@ -4,32 +4,26 @@ using UnityEngine;
 
 namespace PlayerComponents
 {
-    [RequireComponent(typeof(PlayerColor))]
+    [RequireComponent(typeof(CombatFx))]
     public class PlayerCombat : NetworkBehaviour
     {
         [SerializeField][SyncVar] private float _invincibilityDuration;
-        [SerializeField] private Color _invincibilityColor;
-        private PlayerColor _playerColor;
+        private CombatFx _combatFx;
         [SyncVar] private bool _isInvincible;
 
         private void Awake()
         {
-            _playerColor = GetComponent<PlayerColor>();
+            _combatFx = GetComponent<CombatFx>();
         }
 
+        [Server]
         public bool TryGetDamage()
         {
             if (_isInvincible)
                 return false;
             
-            CmdGetDamage();
-            return true;
-        }
-        
-        [Command(requiresAuthority = false)]
-        public void CmdGetDamage()
-        {
             GetDamage();
+            return true;
         }
 
         [Server]
@@ -38,12 +32,7 @@ namespace PlayerComponents
             if (_isInvincible)
                 return;
             _isInvincible = true;
-            ChangeColor();
-        }
-        
-        private void ChangeColor()
-        {
-            _playerColor.RpcChangeColor(_invincibilityColor);
+            _combatFx.RpcPlayerAnimations(_invincibilityDuration);
             StartCoroutine(ResetCombat());
         }
 
@@ -51,7 +40,6 @@ namespace PlayerComponents
         {
             yield return new WaitForSeconds(_invincibilityDuration);
             _isInvincible = false;
-            _playerColor.SetDefaultColor();
         }
     }
 }
